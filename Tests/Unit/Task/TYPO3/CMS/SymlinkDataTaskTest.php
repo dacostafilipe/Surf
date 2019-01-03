@@ -57,6 +57,26 @@ class SymlinkDataTaskTest extends BaseTaskTest
     /**
      * @test
      */
+    public function disableCreationOfUploadsFolder()
+    {
+        $options = [
+            'symlinkUploadsFolder' => false,
+        ];
+        $this->task->execute($this->node, $this->application, $this->deployment, $options);
+
+        $releasePath = $this->deployment->getApplicationReleasePath($this->application);
+        $dataPath = '../../shared/Data';
+        $this->assertNotContains("{ [ -d {$dataPath}/uploads ] || mkdir -p {$dataPath}/uploads ; }", $this->commands['executed']);
+        $this->assertNotContains("ln -sf {$dataPath}/uploads '{$releasePath}'/uploads", $this->commands['executed']);
+
+        $this->assertCommandExecuted("cd '{$releasePath}'");
+        $this->assertCommandExecuted("{ [ -d {$dataPath}/fileadmin ] || mkdir -p {$dataPath}/fileadmin ; }");
+        $this->assertCommandExecuted("ln -sf {$dataPath}/fileadmin '{$releasePath}'/fileadmin");
+    }
+
+    /**
+     * @test
+     */
     public function withAdditionalDirectoriesCreatesCorrectLinks()
     {
         $options = [
